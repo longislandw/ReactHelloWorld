@@ -55,7 +55,6 @@ const Board:React.FC = () =>{
         switch (key) {
             case 'table':
                 return <Tabs defaultActiveKey="1" items={tableItems} />;
-                break;
             case 'chart':
                 return <Tabs defaultActiveKey="1" items={chartItems} />;
             default:

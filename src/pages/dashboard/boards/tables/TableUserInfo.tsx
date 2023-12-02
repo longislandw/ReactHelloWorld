@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import {onExportBasicExcel} from "component/excelExport/ExcelExport";
 import {EditableColumnsType} from "component/types";
 import {updateDataFn, UserInfo} from "./PageUserInfo";
-import {ReactNode, useState} from "react";
+import {useState} from "react";
 
 const { TextArea } = Input;
 const tableProps: TableProps<UserInfo> = {

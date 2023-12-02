@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import Swal from 'sweetalert2';
-import {Button, Col, Form, InputNumber, Row, Space, Switch} from "antd";
+import React, {useState} from 'react';
+import {Input, Button, Form, InputNumber,Space} from "antd";
 import {dateRangePresets, onDateRangeChange, RangePicker} from "component/ui/dataRangePicker/DateRangePicker";
 import TableUserInfo from "./TableUserInfo";
-import userinfodata from "data/userInfo.json";
+import userDataPack from "data/userInfo.json";
+import Swal from "sweetalert2";
+import dayjs, {Dayjs} from "dayjs";
 
 export interface UserDataPack {
     status: number
@@ -14,6 +15,7 @@ export interface UserInfo {
     key:    number;
     id:     string;
     name:   string;
+    age:    number;
     dateOfBirth:  string;
     address:      string;
     registerDate: string;
@@ -27,8 +29,8 @@ export type updateDataFn<type>=(id:string, row:type)=>Promise<[status:number, re
 const PageUserInfo:React.FC=()=>{
     const [searchForm] = Form.useForm();
     const [loading, setLoading] = useState(false);
-    const [userDataPack, setUserDataPack] = useState<UserDataPack>();
-    const [userData, setUserData] = useState<UserInfo[]>([])
+    // const [userDataPack, setUserDataPack] = useState<UserDataPack>();
+    const [userData, setUserData] = useState<UserInfo[]>(userDataPack.data)
 
     const doSearch = (values: any) => {
         // 處理時間元件(格式)
@@ -45,20 +47,46 @@ const PageUserInfo:React.FC=()=>{
 
         // 建立要用來搜尋的資料
         const fieldValues = {
-            'upperBond': values['upperBond']/100,
-            'lowerBond': values['lowerBond']/100,
+            'name': values['name'],
+            'upperBond': values['upperBond'],
+            'lowerBond': values['lowerBond'],
             'dateRange': [start, end],
         };
 
         // setSearch([fieldValues.upperBond, fieldValues.lowerBond, fieldValues.dateRange])
         console.log('Received values of form: ', fieldValues);
-        getData(fieldValues.upperBond, fieldValues.lowerBond, fieldValues.dateRange)
+        getData(fieldValues.name,fieldValues.upperBond, fieldValues.lowerBond, fieldValues.dateRange)
     };
 
-    const getData = (upBond:number,lowBond:number,dateRange:string[]) => {
+    const getData = (name:string, upBond:number,lowBond:number,dateRange:string[]) => {
         setLoading(true);
-        setUserDataPack(userinfodata);
-        setUserData(userinfodata.data)
+        const userinfodata = userDataPack
+        if (userinfodata){
+            if (userDataPack.status===200){
+                let newData = userinfodata.data.filter((item)=>{
+                    let result = true
+                    if (name) result=result&& item.name.includes(name)
+                    if (upBond) result=result&& item.age<upBond
+                    if (lowBond) result=result&& item.age>lowBond
+                    if (dateRange[0]) result=result&& dayjs(item.registerDate, 'YYYY-MM-DD')>dayjs(dateRange[0], 'YYYY-MM-DD')
+                    if (dateRange[1]) result=result&& dayjs(item.registerDate, 'YYYY-MM-DD')<dayjs(dateRange[1], 'YYYY-MM-DD')
+                    return result
+                })
+                setTimeout(()=>{
+                    setUserData(newData);
+                    setLoading(false);
+                },500)
+            }else {
+                console.log("FetchData Failed")
+                Swal.fire({
+                    icon: 'error',
+                    title: userDataPack.status,
+                    text: 'FetchData Failed',
+                }).finally(()=>{setLoading(false)} )
+            }
+        }
+
+
         setTimeout(setLoading,1000,false)
         // setLoading(false);
 
@@ -84,7 +112,7 @@ const PageUserInfo:React.FC=()=>{
         //             Swal.fire({
         //                 icon: 'error',
         //                 title: '連線失敗...',
-        //                 text: '請檢查網路狀況，若仍無法連線請洽詢資管部人員',
+        //                 text: '請檢查網路狀況，若仍無法連線請洽詢網站管理員',
         //             }).then(r =>{setLoading(false)} )
         //         })
         // ;
@@ -124,11 +152,14 @@ const PageUserInfo:React.FC=()=>{
             <Space direction={"vertical"} size={"middle"}>
                 <h2 style={{marginBlockStart: 0, marginBlockEnd: 0}}>User Info Table</h2>
                 <Form layout={"inline"} onFinish={doSearch} form={searchForm}>
-                    <Form.Item name="lowerBond" label="年齡高於" initialValue={0}>
+                    <Form.Item name="name" label="名字">
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name="lowerBond" label="年齡高於">
                         <InputNumber min={0} formatter={(value) => `${value}歲`}/>
                     </Form.Item>
 
-                    <Form.Item name="upperBond" label="年齡低於" initialValue={100}>
+                    <Form.Item name="upperBond" label="年齡低於" >
                         <InputNumber min={0} formatter={(value) => `${value}歲`}/>
                     </Form.Item>
 

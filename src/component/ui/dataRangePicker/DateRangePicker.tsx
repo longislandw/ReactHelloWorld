@@ -2,7 +2,6 @@ import type { TimeRangePickerProps } from 'antd';
 import {DatePicker} from "antd";
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
-import React from "react";
 
 const { RangePicker } = DatePicker;
 const dateRangePresets: TimeRangePickerProps['presets'] = [

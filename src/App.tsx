@@ -8,7 +8,7 @@ import RootLayout from './pages/RootLayout'
 const router = createBrowserRouter([
     {
         // path: "/",
-        // element:<RootLayout/>,
+        element:<RootLayout/>,
         errorElement:<PageNotFound/>,
         children:[
             {
