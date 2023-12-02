@@ -4,7 +4,7 @@ import {dateRangePresets, onDateRangeChange, RangePicker} from "component/ui/dat
 import TableUserInfo from "./TableUserInfo";
 import userDataPack from "data/userInfo.json";
 import Swal from "sweetalert2";
-import dayjs, {Dayjs} from "dayjs";
+import dayjs from "dayjs";
 
 export interface UserDataPack {
     status: number

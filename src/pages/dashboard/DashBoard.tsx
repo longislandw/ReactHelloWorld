@@ -3,6 +3,7 @@ import * as React from "react";
 import {ConfigProvider, Layout, Menu} from "antd";
 import {HomeOutlined, AreaChartOutlined, BugOutlined} from "@ant-design/icons";
 import {headerStyle, footerStyle} from "../../assets/LayoutStyles";
+import boards from "./boards/Boards";
 
 // const { Header,Sider, Footer, Content } = Layout;
 const { Header, Footer} = Layout;
@@ -18,6 +19,7 @@ export const menuStyle: React.CSSProperties = {
 };
 
 const DashBoard:React.FC = () =>{
+    const current=window.location.pathname
     return(
         <Layout style={{minHeight: "100vh", width: "100%"}}>
             <ConfigProvider
@@ -36,20 +38,20 @@ const DashBoard:React.FC = () =>{
                 <Menu
                     style={menuStyle}
                     mode="horizontal"
-                    defaultSelectedKeys={['1']}
+                    defaultSelectedKeys={[current]}
                     items={[
                         {
-                            key: '1',
+                            key: '/',
                             icon: <HomeOutlined />,
                             label: <NavLink to="/">Home</NavLink>,
                         },
                         {
-                            key: '2',
+                            key: '/boards',
                             icon: <AreaChartOutlined />,
                             label: <NavLink to="/boards">Tables/Charts</NavLink>,
                         },
                         {
-                            key: '3',
+                            key: '/bar',
                             icon: <BugOutlined />,
                             label: <NavLink to="/bar">Bar/TestPage</NavLink>,
                         },
