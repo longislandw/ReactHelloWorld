@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
-import {DashBoard, Home, Bar, PageNotFound} from './pages/Pages';
+import {DashBoard, Home, Boards, Bar, PageNotFound} from './pages/Pages';
 import RootLayout from './pages/RootLayout'
 // import './style.css';
 
@@ -21,6 +21,10 @@ const router = createBrowserRouter([
                     {
                         path: "bar",
                         element: <Bar/>,
+                    },
+                    {
+                        path: "boards",
+                        element: <Boards/>,
                     },
                     {
                         path: "*",

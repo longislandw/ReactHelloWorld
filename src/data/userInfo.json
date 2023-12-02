@@ -1,0 +1,27 @@
+{
+  "status": 200,
+  "data": [
+    {
+      "key":    1,
+      "id":     "0001",
+      "name":   "Robert",
+      "dateOfBirth":  "1000-01-01",
+      "address":      "Earth",
+      "registerDate": "2023-12-01",
+      "level":        "Highest",
+      "interest":    "Coding",
+      "memo":       "administrator"
+    },
+    {
+      "key":    2,
+      "id":     "0002",
+      "name":   "Tina",
+      "dateOfBirth":  "2000-01-01",
+      "address":      "Jupiter",
+      "registerDate": "2023-12-02",
+      "level":        "Highest",
+      "interest":    "Secret",
+      "memo":       "administrator"
+    }
+  ]
+}

@@ -1,22 +1,13 @@
 import {NavLink, Outlet} from "react-router-dom";
 import * as React from "react";
 import {ConfigProvider, Layout, Menu} from "antd";
-import {HomeOutlined, BugOutlined} from "@ant-design/icons";
+import {HomeOutlined, AreaChartOutlined, BugOutlined} from "@ant-design/icons";
+import {headerStyle, footerStyle} from "../../assets/LayoutStyles";
 
-const { Header,Sider, Footer, Content } = Layout;
+// const { Header,Sider, Footer, Content } = Layout;
+const { Header, Footer} = Layout;
 
-const headerStyle: React.CSSProperties = {
-    // display: 'flex',
-    textAlign: 'left',
-    backgroundColor:'rgba(255,255,255,0.75)',
-    height: 70,
-    // padding: 0,
-    // paddingInline: 50,
-    lineHeight: '64px',
-    // backgroundColor: '#7dbcea',
-};
-
-const menuStyle: React.CSSProperties = {
+export const menuStyle: React.CSSProperties = {
 
     textAlign: 'center',
     // lineHeight: '120px',
@@ -24,31 +15,6 @@ const menuStyle: React.CSSProperties = {
     // fontSize: 30,
     // fontWeight: "bold",
     backgroundColor: 'rgba(255,255,255,0.75)',
-};
-
-const contentStyle: React.CSSProperties = {
-    padding: 24,
-    margin: '24px 16px',
-    minHeight: 700,
-    // width: "100%",
-    // textAlign: 'center',
-    // minHeight: 120,
-    // lineHeight: '120px',
-    // color: '#fff',
-    backgroundColor: '#ffffff',
-};
-
-const siderStyle: React.CSSProperties = {
-    textAlign: 'center',
-    lineHeight: '120px',
-    color: '#fff',
-    // backgroundColor: '#3ba0e9',
-};
-
-const footerStyle: React.CSSProperties = {
-    textAlign: 'center',
-    color: '#fff',
-    // backgroundColor: '#7dbcea',
 };
 
 const DashBoard:React.FC = () =>{
@@ -79,6 +45,11 @@ const DashBoard:React.FC = () =>{
                         },
                         {
                             key: '2',
+                            icon: <AreaChartOutlined />,
+                            label: <NavLink to="/boards">Tables/Charts</NavLink>,
+                        },
+                        {
+                            key: '3',
                             icon: <BugOutlined />,
                             label: <NavLink to="/bar">Bar/TestPage</NavLink>,
                         },
@@ -86,13 +57,13 @@ const DashBoard:React.FC = () =>{
                 >
                 </Menu>
             </Header>
-            <Layout hasSider>
-                <Sider style={siderStyle}>Sider</Sider>
-                <Content style={contentStyle}>
-                    {/*Content*/}
-                    <Outlet/>
-                </Content>
-            </Layout>
+            <Outlet/>
+            {/*<Layout hasSider>*/}
+            {/*    <Sider style={siderStyle}>Sider</Sider>*/}
+            {/*    <Content style={contentStyle}>*/}
+            {/*        <Outlet/>*/}
+            {/*    </Content>*/}
+            {/*</Layout>*/}
             <Footer style={footerStyle}/>
             </ConfigProvider>
         </Layout>
