@@ -39,7 +39,7 @@ const router = createBrowserRouter([
 
         ]
     },
-]);
+], {basename:process.env.PUBLIC_URL});
 
 function App (){
     return (
