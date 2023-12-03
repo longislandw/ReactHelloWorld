@@ -161,7 +161,7 @@ const PageUserInfo:React.FC<{ tableW: number }>=(props:{tableW:number})=>{
         <>
             <Space direction={"vertical"} size={"middle"}>
                 <h2 style={{marginBlockStart: 0, marginBlockEnd: 0}}>User Info Table</h2>
-                <Form layout={"inline"} onFinish={doSearch} form={searchForm}>
+                <Form style={{display:"flex", flexWrap:"wrap"}} labelWrap={true} size={"small"} onFinish={doSearch} form={searchForm}>
                     <Form.Item name="name" label="名字">
                         <Input />
                     </Form.Item>
