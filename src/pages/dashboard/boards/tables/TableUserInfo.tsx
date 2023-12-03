@@ -1,3 +1,5 @@
+import {useState} from "react";
+import dayjs from "dayjs";
 import {
     Button,
     Col,
@@ -12,12 +14,11 @@ import {
     Typography
 } from 'antd';
 import type {TableProps} from 'antd/es/table';
+import {PlusOutlined} from "@ant-design/icons";
 import Swal from "sweetalert2";
 import {onExportBasicExcel} from "component/excelExport/ExcelExport";
 import {EditableColumnsType} from "component/types";
 import {updateDataFn, UserInfo} from "./PageUserInfo";
-import {useState} from "react";
-import dayjs from "dayjs";
 
 const { TextArea } = Input;
 const tableProps: TableProps<UserInfo> = {
@@ -34,13 +35,14 @@ interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
     editing: boolean;
     dataIndex: string;
     title: any;
+    required?: boolean;
     inputType: 'number' | 'text' | 'date' | 'string';
     record: UserInfo;
     index: number;
     children: React.ReactNode;
 }
 
-const EditableCell: React.FC<EditableCellProps> = ({editing, dataIndex, title,
+const EditableCell: React.FC<EditableCellProps> = ({editing, dataIndex, title, required,
                                                        inputType, record,
                                                        index, children,
                                                        ...restProps
@@ -72,7 +74,7 @@ const EditableCell: React.FC<EditableCellProps> = ({editing, dataIndex, title,
                     style={{ margin: 0 }}
                     rules={[
                         {
-                            required: true,
+                            required: required,
                             message: `Please Input ${title}!`,
                         },
                     ]}
@@ -104,6 +106,58 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
     const cancel = () => {
         setEditingKey(-1);
     };
+
+    const addRow=async ()=>{
+        try {
+            let max = -1
+            for (let i =0;i<shownData.length;i++){
+                let comp= parseInt(shownData[i].id)
+                if (comp && comp>max)max=comp
+            }
+            let id = String(max+1).padStart(4,"0")
+            let registerDate= dayjs().format('YYYY-MM-DD')
+            let level = 'Rookie'
+
+            const newRow = {
+                id: id,
+                key: max+1,
+                name: "Default",
+                // age: 0,
+                // dateOfBirth: "",
+                // address: "",
+                registerDate: registerDate,
+                level: level,
+                interest: "",
+                memo: ""
+            }
+
+            const res =await updateUserInfoFn(id, newRow)
+            if (res[0]===200){
+                Swal.fire({
+                    icon: 'success',
+                    title: '新增成功',
+                    showConfirmButton: true,
+                    timer: 1000
+                }).then(()=>{return 0})
+            }else{
+                Swal.fire({
+                    icon: 'error',
+                    title: res[0],
+                    text: res[1],
+                    footer: '請洽詢網站管理者尋求協助'
+                })
+            }
+        }
+        catch (errInfo){
+            console.log('Add Row Failed:', errInfo);
+            Swal.fire({
+                icon: 'error',
+                title: '新增欄位失敗' ,
+                text: errInfo as string,
+                footer: '請洽詢網站管理者尋求協助'
+            }).then(()=>{return -1})
+        }
+    }
 
     const save = async (key: string) => {
         try {
@@ -350,7 +404,12 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
             }}
         >
             <Row>
-                <Col push={21} span={1}>
+                <Col span={1}>
+                    <Button type={"primary"} icon={<PlusOutlined />} onClick={()=>addRow()}>
+                        新增欄位~~~
+                    </Button>
+                </Col>
+                <Col push={20} span={1}>
                     <Button type={'primary'} style={{marginBottom: 10}}
                             onClick={()=>onExportBasicExcel(columns,shownData,'使用者資料表.xlsx')}>匯出Excel</Button>
                 </Col>

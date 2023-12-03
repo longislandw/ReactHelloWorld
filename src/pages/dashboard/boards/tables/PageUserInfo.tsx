@@ -15,15 +15,15 @@ export interface UserInfo {
     key:    number;
     id:     string;
     name:   string;
-    age:    number;
-    dateOfBirth:  string;
+    age?:    number;
+    dateOfBirth?:  string;
     // dateOfBirth:  dayjs.Dayjs;
-    address:      string;
+    address?:      string;
     registerDate: string;
     // registerDate: dayjs.Dayjs;
     level:        string;
-    interest:    string;
-    memo: string;
+    interest?:    string;
+    memo?: string;
 }
 
 export type updateDataFn<type>=(id:string, row:type)=>Promise<[status:number, response:string]>;
@@ -146,7 +146,8 @@ const PageUserInfo:React.FC<{ tableW: number }>=(props:{tableW:number})=>{
                 return [200,'edit succeed']
             } else {
                 newData.push(row);
-                setUserData(userData);
+                console.log(newData)
+                setUserData(newData);
                 return [200,'add succeed']
             }
         }else{
