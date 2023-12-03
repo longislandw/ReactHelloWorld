@@ -26,7 +26,8 @@ export interface UserInfo {
 
 export type updateDataFn<type>=(id:string, row:type)=>Promise<[status:number, response:string]>;
 
-const PageUserInfo:React.FC=()=>{
+const PageUserInfo:React.FC<{ tableW: number }>=(props:{tableW:number})=>{
+    const {tableW}= props;
     const [searchForm] = Form.useForm();
     const [loading, setLoading] = useState(false);
     // const [userDataPack, setUserDataPack] = useState<UserDataPack>();
@@ -72,6 +73,12 @@ const PageUserInfo:React.FC=()=>{
                     if (dateRange[1]) result=result&& dayjs(item.registerDate, 'YYYY-MM-DD')<dayjs(dateRange[1], 'YYYY-MM-DD')
                     return result
                 })
+                // let newData2:UserInfo[]=[]
+                // for(let i=0;i<newData.length;i++){
+                //     newData2.push({...newData[i],dateOfBirth:dayjs(newData[i].dateOfBirth), registerDate:dayjs(newData[i].registerDate)})
+                //     // newData[i].dateOfBirth= dayjs(newData[i].dateOfBirth)
+                // }
+
                 setTimeout(()=>{
                     setUserData(newData);
                     setLoading(false);
@@ -179,7 +186,7 @@ const PageUserInfo:React.FC=()=>{
                     </Form.Item>
                 </Form>
 
-                <TableUserInfo loading={loading} shownData={userData} updateUserInfoFn={updateData}/>
+                <TableUserInfo tableW={tableW} loading={loading} shownData={userData} updateUserInfoFn={updateData}/>
             </Space>
         </>
     )

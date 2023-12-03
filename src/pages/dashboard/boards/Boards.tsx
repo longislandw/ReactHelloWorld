@@ -1,4 +1,5 @@
 import React,{useState} from "react";
+import ResizeObserver, {SizeInfo} from 'rc-resize-observer';
 import {Layout, Menu, MenuProps, Tabs} from 'antd';
 import type {TabsProps} from "antd";
 import {siderStyle, contentStyle} from "assets/LayoutStyles";
@@ -7,7 +8,13 @@ import PageUserInfo from "./tables/PageUserInfo";
 const {Sider, Content } = Layout;
 
 const Board:React.FC = () =>{
+    const [tableW, setTableW] = useState<number>(0)
     const [menuKey, setMenuKey] = useState<string>('table')
+
+    function changeWindowWidth(size:SizeInfo){
+        console.log(size.width, size.height);
+        setTableW(size.width);
+    }
 
     const menuItems: MenuProps['items']=[
         {
@@ -24,7 +31,7 @@ const Board:React.FC = () =>{
         {
             key: '1',
             label: '使用者資料',
-            children: <PageUserInfo/>,
+            children: <PageUserInfo tableW={tableW}/>,
         },
         {
             key: '2',
@@ -69,9 +76,11 @@ const Board:React.FC = () =>{
                 <Menu theme={"dark"} items={menuItems} onSelect={(info)=>{setMenuKey(info.key)}}>
                 </Menu>
             </Sider>
+            <ResizeObserver onResize={ changeWindowWidth}>
             <Content style={contentStyle}>
                 {(switchRender(menuKey))}
             </Content>
+            </ResizeObserver>
         </Layout>
     </>
     )

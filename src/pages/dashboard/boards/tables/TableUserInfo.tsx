@@ -5,6 +5,7 @@ import {onExportBasicExcel} from "component/excelExport/ExcelExport";
 import {EditableColumnsType} from "component/types";
 import {updateDataFn, UserInfo} from "./PageUserInfo";
 import {useState} from "react";
+import dayjs from "dayjs";
 
 const { TextArea } = Input;
 const tableProps: TableProps<UserInfo> = {
@@ -59,6 +60,8 @@ const EditableCell: React.FC<EditableCellProps> = ({editing, dataIndex, title,
 
 const TableUserInfo=(props:{loading:boolean, shownData: UserInfo[], updateUserInfoFn:updateDataFn<UserInfo>})=>{
     const {loading, shownData,updateUserInfoFn} = props;
+const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[], updateUserInfoFn:updateDataFn<UserInfo>})=>{
+    const {tableW, loading, shownData,updateUserInfoFn} = props;
     const [form] = Form.useForm();
     const [editingKey, setEditingKey] = useState<number>(-1);
 
@@ -277,7 +280,7 @@ const TableUserInfo=(props:{loading:boolean, shownData: UserInfo[], updateUserIn
                 </Col>
             </Row>
             <Table {...tableProps}
-                   // style={{width: tableWidth}}
+                   style={{width: tableW-30, padding:'0'}}
                    scroll={{x:"80vw"}}
                    components={{
                        body: {
