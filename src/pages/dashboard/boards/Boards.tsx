@@ -72,7 +72,10 @@ const Board:React.FC = () =>{
     return(
     <>
         <Layout hasSider>
-            <Sider style={siderStyle}>
+            <Sider style={siderStyle}
+                   breakpoint="lg"
+                   collapsedWidth="0"
+            collapsible={true}  zeroWidthTriggerStyle={{top:"0"}}>
                 <Menu theme={"dark"} items={menuItems} onSelect={(info)=>{setMenuKey(info.key)}}>
                 </Menu>
             </Sider>
