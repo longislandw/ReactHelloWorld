@@ -1,4 +1,16 @@
-import {Button, Col, ConfigProvider, Form, Input, InputNumber, Popconfirm, Row, Table, Typography} from 'antd';
+import {
+    Button,
+    Col,
+    ConfigProvider,
+    DatePicker,
+    Form,
+    Input,
+    InputNumber,
+    Popconfirm,
+    Row,
+    Table,
+    Typography
+} from 'antd';
 import type {TableProps} from 'antd/es/table';
 import Swal from "sweetalert2";
 import {onExportBasicExcel} from "component/excelExport/ExcelExport";
@@ -22,7 +34,7 @@ interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
     editing: boolean;
     dataIndex: string;
     title: any;
-    inputType: 'number' | 'text';
+    inputType: 'number' | 'text' | 'date' | 'string';
     record: UserInfo;
     index: number;
     children: React.ReactNode;
@@ -33,7 +45,24 @@ const EditableCell: React.FC<EditableCellProps> = ({editing, dataIndex, title,
                                                        index, children,
                                                        ...restProps
                                                    }) => {
-    const inputNode = inputType === 'number' ? <InputNumber /> : <TextArea/>;
+    let inputNode:React.ReactNode
+    switch (inputType){
+        case "number":
+            inputNode = <InputNumber />
+            break
+        case "string":
+            inputNode = <Input/>
+            break
+        case "text":
+            inputNode = <TextArea/>
+            break
+        case "date":
+            inputNode = <DatePicker onChange={(date,dateString)=>{console.log(dateString)}}/>
+            break
+        default:
+            inputNode = <Input/>
+    }
+
     return (
         <td {...restProps}>
             {editing ? (
@@ -58,8 +87,6 @@ const EditableCell: React.FC<EditableCellProps> = ({editing, dataIndex, title,
 };
 
 
-const TableUserInfo=(props:{loading:boolean, shownData: UserInfo[], updateUserInfoFn:updateDataFn<UserInfo>})=>{
-    const {loading, shownData,updateUserInfoFn} = props;
 const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[], updateUserInfoFn:updateDataFn<UserInfo>})=>{
     const {tableW, loading, shownData,updateUserInfoFn} = props;
     const [form] = Form.useForm();
@@ -68,7 +95,8 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
     const isEditing = (record: UserInfo) => record.key === editingKey;
 
     const edit = (record: Partial<UserInfo> & { key: React.Key }) => {
-        form.setFieldsValue({ ...record });
+        let newData= {...record,dateOfBirth:dayjs(record.dateOfBirth), registerDate:dayjs(record.registerDate)}
+        form.setFieldsValue({ ...newData });
         // console.log(record.id)
         if (record.key) setEditingKey(record.key);
     };
@@ -79,9 +107,12 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
 
     const save = async (key: string) => {
         try {
-            const row = (await form.validateFields()) as UserInfo;
+            const row = (await form.validateFields());
+            let newData= {...row}
+            if (row.dateOfBirth) newData.dateOfBirth=(row.dateOfBirth as dayjs.Dayjs).format('YYYY-MM-DD')
+            if (row.registerDate) newData.registerDate=(row.registerDate as dayjs.Dayjs)?.format('YYYY-MM-DD')
 
-            const res =await updateUserInfoFn(key,row)
+            const res =await updateUserInfoFn(key,newData)
             if (res[0]===200){
                 Swal.fire({
                     icon: 'success',
@@ -159,58 +190,101 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
             title: 'ID',
             dataIndex: 'id',
             key: 'id',
-            // width:'127px',
+            width:'60px',
+            align: "center",
+
             // sorter:true,
         },
         {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
-            // width:'127px',
+            width:'127px',
+            align: "center",
             // sorter:true,
+            onCell: (record: UserInfo) => ({
+                record,
+                inputType: 'string',
+                dataIndex: 'name',
+                title: 'Name',
+                editing: isEditing(record),
+            }),
+        },
+        {
+            title: 'Age',
+            dataIndex: 'age',
+            key: 'age',
+            width:'70px',
+            align: "center",
+            // sorter:true,
+            onCell: (record: UserInfo) => ({
+                record,
+                inputType: 'number',
+                dataIndex: 'age',
+                title: 'Age',
+                editing: isEditing(record),
+            }),
         },
         {
             title: 'Birth',
             dataIndex: 'dateOfBirth',
             key: 'dateOfBirth',
-            // width:'127px',
-            // sorter:true,
+            width:'120px',
+            align: "center",
+            // sorter:true
+            onCell: (record: UserInfo) => ({
+                record,
+                inputType: 'date',
+                dataIndex: 'dateOfBirth',
+                title: 'Birth',
+                editing: isEditing(record),
+                width:'200px',
+            }),
         },
         {
             title: 'Address',
             dataIndex: 'address',
             key: 'address',
-            // width:'127px',
+            width:'80px',
+            align: "center",
             // sorter:true,
+            onCell: (record: UserInfo) => ({
+                record,
+                inputType: 'text',
+                dataIndex: 'address',
+                title: 'Address',
+                editing: isEditing(record),
+            }),
         },
         {
             title: 'RegisterDate',
             dataIndex: 'registerDate',
             key: 'registerDate',
-            // width:'127px',
+            width:'120px',
+            align: "center",
             // sorter:true,
         },
         {
             title: 'Level',
             dataIndex: 'level',
             key: 'level',
-            // width:'127px',
+            width:'60px',
+            align: "center",
             // sorter:true,
         },
         {
             title: 'Interest',
             dataIndex: 'interest',
             key: 'interest',
-            width: '90px',
-            // align:"right" as "right",
+            width: '120px',
+            align: "center",
             // ellipsis: true,
-            editable: true ,
             render:(text:string)=>{
                 return <div style={{whiteSpace: 'pre-wrap'}}>{text}</div>
             },
             onCell: (record: UserInfo) => ({
                 record,
-                inputType: 'text',
+                inputType: 'string',
                 dataIndex: 'interest',
                 title: 'Interest',
                 editing: isEditing(record),
@@ -221,8 +295,8 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
             dataIndex: 'memo',
             key: 'memo',
             width: '200px',
+            align: "center",
             // ellipsis: true,
-            editable: true ,
             render:(text:string)=>{
                 return <div style={{whiteSpace: 'pre-wrap'}}>{text}</div>
             },
@@ -238,6 +312,7 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
             title: 'Edit',
             dataIndex: 'operation',
             width: '90px',
+            align: "center",
             render: (_: any, record: UserInfo) => {
                 const editable = isEditing(record);
                 return editable ? (
@@ -270,6 +345,7 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
                         headerBg:'#4df87d',
                         headerSortActiveBg: '#3ccc65',
                         borderRadius: 1000,
+                        cellPaddingInline: 0,
                     }},
             }}
         >

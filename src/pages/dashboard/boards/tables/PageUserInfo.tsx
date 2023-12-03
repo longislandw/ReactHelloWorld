@@ -17,8 +17,10 @@ export interface UserInfo {
     name:   string;
     age:    number;
     dateOfBirth:  string;
+    // dateOfBirth:  dayjs.Dayjs;
     address:      string;
     registerDate: string;
+    // registerDate: dayjs.Dayjs;
     level:        string;
     interest:    string;
     memo: string;
@@ -31,7 +33,7 @@ const PageUserInfo:React.FC<{ tableW: number }>=(props:{tableW:number})=>{
     const [searchForm] = Form.useForm();
     const [loading, setLoading] = useState(false);
     // const [userDataPack, setUserDataPack] = useState<UserDataPack>();
-    const [userData, setUserData] = useState<UserInfo[]>(userDataPack.data)
+    const [userData, setUserData] = useState<UserInfo[]>([])
 
     const doSearch = (values: any) => {
         // 處理時間元件(格式)

@@ -29,4 +29,4 @@ export interface IStyleAttr {
   bold?: boolean;
 }
 
-export type EditableColumnsType<T=unknown>=(ColumnGroupType<T>&{editable:boolean} | ColumnType<T>)[]
+export type EditableColumnsType<T=unknown>=(ColumnGroupType<T>&{editable?:boolean} | ColumnType<T>)[];
