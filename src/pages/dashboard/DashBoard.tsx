@@ -4,6 +4,7 @@ import {ConfigProvider, Layout, Menu} from "antd";
 import {HomeOutlined, AreaChartOutlined, BugOutlined} from "@ant-design/icons";
 import {headerStyle, footerStyle} from "../../assets/LayoutStyles";
 import boards from "./boards/Boards";
+import * as process from "process";
 
 // const { Header,Sider, Footer, Content } = Layout;
 const { Header, Footer} = Layout;
@@ -19,7 +20,24 @@ export const menuStyle: React.CSSProperties = {
 };
 
 const DashBoard:React.FC = () =>{
+    const basename='/ReactHelloWorld';
     const current=window.location.pathname
+    let currentComponet= '0'
+    switch (current){
+        case basename:
+            currentComponet='1'
+            break;
+        case basename+'/':
+            currentComponet='1'
+            break;
+        case basename+'/boards':
+            currentComponet='2'
+            break;
+        case basename+'/bar':
+            currentComponet='3'
+            break;
+    }
+
     return(
         <Layout style={{minHeight: "100vh", width: "100%"}}>
             <ConfigProvider
@@ -38,20 +56,20 @@ const DashBoard:React.FC = () =>{
                 <Menu
                     style={menuStyle}
                     mode="horizontal"
-                    defaultSelectedKeys={[current]}
+                    defaultSelectedKeys={[currentComponet]}
                     items={[
                         {
-                            key: '/',
+                            key: '1',
                             icon: <HomeOutlined />,
                             label: <NavLink to="/">Home</NavLink>,
                         },
                         {
-                            key: '/boards',
+                            key: '2',
                             icon: <AreaChartOutlined />,
                             label: <NavLink to="/boards">Tables/Charts</NavLink>,
                         },
                         {
-                            key: '/bar',
+                            key: '3',
                             icon: <BugOutlined />,
                             label: <NavLink to="/bar">Bar/TestPage</NavLink>,
                         },
