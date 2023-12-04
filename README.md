@@ -1,6 +1,4 @@
 # To-Do
-+ Table 做成可以點ID就編輯, 像是Django 的資料庫依樣
-+ 修復當表單沒資料時無法新增的問題
 
 # Getting Started with Create React App
 

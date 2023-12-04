@@ -1,17 +1,18 @@
 import {useState} from "react";
 import dayjs from "dayjs";
 import {
-    Button,
-    Col,
     ConfigProvider,
-    DatePicker,
-    Form,
+    Col,
+    Row,
+    Typography,
     Input,
     InputNumber,
+    Button,
+    DatePicker,
     Popconfirm,
-    Row,
+    Modal,
+    Form, FormInstance,
     Table,
-    Typography
 } from 'antd';
 import type {TableProps} from 'antd/es/table';
 import {PlusOutlined} from "@ant-design/icons";
@@ -59,7 +60,7 @@ const EditableCell: React.FC<EditableCellProps> = ({editing, dataIndex, title, r
             inputNode = <TextArea/>
             break
         case "date":
-            inputNode = <DatePicker onChange={(date,dateString)=>{console.log(dateString)}}/>
+            inputNode = <DatePicker/>
             break
         default:
             inputNode = <Input/>
@@ -92,7 +93,10 @@ const EditableCell: React.FC<EditableCellProps> = ({editing, dataIndex, title, r
 const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[], updateUserInfoFn:updateDataFn<UserInfo>})=>{
     const {tableW, loading, shownData,updateUserInfoFn} = props;
     const [form] = Form.useForm();
+    const [popupForm] = Form.useForm();
+    const [openPopupForm, setOpenPopupForm] = useState(false);
     const [editingKey, setEditingKey] = useState<number>(-1);
+    const [popupFormKey, setPopupFormKey] = useState<string>('');
 
     const isEditing = (record: UserInfo) => record.key === editingKey;
 
@@ -159,7 +163,7 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
         }
     }
 
-    const save = async (key: string) => {
+    const save = async (key: string, form:FormInstance) => {
         try {
             const row = (await form.validateFields());
             let newData= {...row}
@@ -246,6 +250,14 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
             key: 'id',
             width:'60px',
             align: "center",
+            render:((value, record, index)=>{
+                return <Typography.Text style={{color:"#49a43b"}} underline={true} onClick={() => {
+                    setOpenPopupForm(true)
+                    setPopupFormKey(value)
+                    let newData= {...record,dateOfBirth:dayjs(record.dateOfBirth), registerDate:dayjs(record.registerDate)}
+                    popupForm.setFieldsValue(newData)
+                }} >{value}</Typography.Text>
+            })
 
             // sorter:true,
         },
@@ -371,7 +383,7 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
                 const editable = isEditing(record);
                 return editable ? (
                     <span>
-                        <Typography.Link onClick={() => save(record.id)} style={{ marginRight: 8 }}>
+                        <Typography.Link onClick={() => save(record.id, form)} style={{ marginRight: 8 }}>
                           儲存
                         </Typography.Link>
                         <Popconfirm title="確定取消嗎?" onConfirm={cancel} okText={"確定"} cancelText={"取消"}>
@@ -390,7 +402,38 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
         },
     ];
 
+    function handleOK(){
+        save(popupFormKey, popupForm)
+        setOpenPopupForm(false)
+    }
+    function handleCancel(){
+        setOpenPopupForm(false)
+    }
+
     return(
+        <>
+            <Modal title={"ID: "+popupFormKey} open={openPopupForm} onOk={handleOK} onCancel={handleCancel} >
+                <Form form={popupForm} layout={"vertical"}>
+                    <Form.Item name='name' label='Name' style={{ margin: 0 }}>
+                        <Input/>
+                    </Form.Item>
+                    <Form.Item name='age' label='Age' style={{ margin: 0 }}>
+                        <InputNumber/>
+                    </Form.Item>
+                    <Form.Item name='dateOfBirth' label='DateOfBirth' style={{ margin: 0 }}>
+                        <DatePicker/>
+                    </Form.Item>
+                    <Form.Item name='address' label='Address' style={{ margin: 0 }}>
+                        <TextArea/>
+                    </Form.Item>
+                    <Form.Item name='interest' label='Interest' style={{ margin: 0 }}>
+                        <Input/>
+                    </Form.Item>
+                    <Form.Item name='memo' label='Memo' style={{ margin: 0 }}>
+                        <TextArea/>
+                    </Form.Item>
+                </Form>
+            </Modal>
         <Form form={form}>
         <ConfigProvider
             theme={{
@@ -430,6 +473,7 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
             />
         </ConfigProvider>
         </Form>
+        </>
     )
 }
 
