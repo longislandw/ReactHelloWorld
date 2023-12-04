@@ -409,7 +409,7 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
                         新增欄位~~~
                     </Button>
                 </Col>
-                <Col push={20} span={1}>
+                <Col push={22} span={1} style={{display: "flex", justifyContent:"flex-end"}}>
                     <Button type={'primary'} style={{marginBottom: 10}}
                             onClick={()=>onExportBasicExcel(columns,shownData,'使用者資料表.xlsx')}>匯出Excel</Button>
                 </Col>
