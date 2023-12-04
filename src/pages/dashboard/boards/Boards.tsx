@@ -22,6 +22,18 @@ const Board:React.FC = () =>{
         setTableW(size.width);
     }
 
+    const menuButton = <Button
+        type="text"
+        className={"hideOnDesktop"}
+        icon={menuIsToggled ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        onClick={() => menuSwitch()}
+        style={{
+            fontSize: '16px',
+            width: 64,
+            height: 64,
+        }}
+    />
+
     const menuItems: MenuProps['items']=[
         {
             key: 'table',
@@ -34,21 +46,11 @@ const Board:React.FC = () =>{
     ]
 
     const tableItems: TabsProps['items'] = [
-        {
-            key: '0',
-            label: <Button
-                type="text"
-                className={"hideOnDesktop"}
-                icon={menuIsToggled ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                onClick={() => menuSwitch()}
-                style={{
-                    fontSize: '16px',
-                    width: 64,
-                    height: 64,
-                }}
-            />,
-            children: <PageUserInfo tableW={tableW}/>,
-        },
+        // {
+        //     key: '0',
+        //     label: menuButton,
+        //     children: <PageUserInfo tableW={tableW}/>,
+        // },
         {
             key: '1',
             label: '使用者資料',
@@ -67,20 +69,20 @@ const Board:React.FC = () =>{
     ];
 
     const chartItems: TabsProps['items'] = [
-        {
-            key: '0',
-            label: <Button
-                type="text"
-                className={"hideOnDesktop"}
-                icon={menuIsToggled ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                onClick={() => menuSwitch()}
-                style={{
-                    fontSize: '16px',
-                    width: 64,
-                    height: 64,
-                }}
-            />,
-        },
+        // {
+        //     key: '0',
+        //     label: <Button
+        //         type="text"
+        //         className={"hideOnDesktop"}
+        //         icon={menuIsToggled ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        //         onClick={() => menuSwitch()}
+        //         style={{
+        //             fontSize: '16px',
+        //             width: 64,
+        //             height: 64,
+        //         }}
+        //     />,
+        // },
         {
             key: '1',
             label: '圖表一',
@@ -96,9 +98,9 @@ const Board:React.FC = () =>{
     function switchRender(key:string){
         switch (key) {
             case 'table':
-                return <Tabs defaultActiveKey="1" items={tableItems} />;
+                return <Tabs defaultActiveKey="1" items={tableItems} tabBarExtraContent={{left:menuButton,}} />;
             case 'chart':
-                return <Tabs defaultActiveKey="1" items={chartItems} />;
+                return <Tabs defaultActiveKey="1" items={chartItems} tabBarExtraContent={{left:menuButton,}} />;
             default:
                 return <div>Empty</div>
         }
