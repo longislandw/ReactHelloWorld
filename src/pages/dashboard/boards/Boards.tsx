@@ -1,16 +1,22 @@
 import React,{useState} from "react";
 import ResizeObserver, {SizeInfo} from 'rc-resize-observer';
-import {Layout, Menu, MenuProps, Tabs} from 'antd';
+import {Drawer, Layout, Menu, MenuProps, Tabs, Button} from 'antd';
 import type {TabsProps} from "antd";
+import {MenuUnfoldOutlined, MenuFoldOutlined} from "@ant-design/icons";
 import {siderStyle, contentStyle} from "assets/LayoutStyles";
 import PageUserInfo from "./tables/PageUserInfo";
+import "assets/App.css";
 
 const {Sider, Content } = Layout;
 
 const Board:React.FC = () =>{
     const [tableW, setTableW] = useState<number>(0)
     const [menuKey, setMenuKey] = useState<string>('table')
-
+    const [menuIsToggled, setMenuIsToggled] = useState(false);
+    const menuSwitch = () => setMenuIsToggled(!menuIsToggled);
+    const onMenuClose = () => {
+        setMenuIsToggled(false);
+    };
     function changeWindowWidth(size:SizeInfo){
         console.log(size.width, size.height);
         setTableW(size.width);
@@ -29,6 +35,21 @@ const Board:React.FC = () =>{
 
     const tableItems: TabsProps['items'] = [
         {
+            key: '0',
+            label: <Button
+                type="text"
+                className={"hideOnDesktop"}
+                icon={menuIsToggled ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                onClick={() => menuSwitch()}
+                style={{
+                    fontSize: '16px',
+                    width: 64,
+                    height: 64,
+                }}
+            />,
+            children: <PageUserInfo tableW={tableW}/>,
+        },
+        {
             key: '1',
             label: '使用者資料',
             children: <PageUserInfo tableW={tableW}/>,
@@ -46,6 +67,20 @@ const Board:React.FC = () =>{
     ];
 
     const chartItems: TabsProps['items'] = [
+        {
+            key: '0',
+            label: <Button
+                type="text"
+                className={"hideOnDesktop"}
+                icon={menuIsToggled ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                onClick={() => menuSwitch()}
+                style={{
+                    fontSize: '16px',
+                    width: 64,
+                    height: 64,
+                }}
+            />,
+        },
         {
             key: '1',
             label: '圖表一',
@@ -73,12 +108,23 @@ const Board:React.FC = () =>{
     <>
         <Layout hasSider>
             <Sider style={siderStyle}
+                   className={"hideOnMobile"}
                    breakpoint="lg"
                    collapsedWidth="0"
-            collapsible={true}  zeroWidthTriggerStyle={{top:"0"}}>
-                <Menu theme={"dark"} items={menuItems} onSelect={(info)=>{setMenuKey(info.key)}}>
-                </Menu>
+                   defaultCollapsed={true}
+                   zeroWidthTriggerStyle={{top:"0"}}>
+                <Menu theme={"dark"} items={menuItems} onSelect={(info)=>{setMenuKey(info.key)}}/>
             </Sider>
+            <Drawer
+                    bodyStyle={{ backgroundColor: "#001529", padding: "0" }}
+                    className={"hideOnDesktop"}
+                    placement={"left"}
+                    closable={false}
+                    width={200}
+                    open={menuIsToggled}
+                    onClose={onMenuClose}>
+                <Menu theme={"dark"} items={menuItems} onSelect={(info)=>{setMenuKey(info.key)}}/>
+            </Drawer>
             <ResizeObserver onResize={ changeWindowWidth}>
             <Content style={contentStyle}>
                 {(switchRender(menuKey))}
