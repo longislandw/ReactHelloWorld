@@ -112,7 +112,7 @@ const TableUserInfo=(props:{tableW:number, loading:boolean, shownData: UserInfo[
             let max = -1
             for (let i =0;i<shownData.length;i++){
                 let comp= parseInt(shownData[i].id)
-                if (comp && comp>max)max=comp
+                if (!Number.isNaN(comp) && comp>max)max=comp
             }
             let id = String(max+1).padStart(4,"0")
             let registerDate= dayjs().format('YYYY-MM-DD')
