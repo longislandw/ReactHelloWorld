@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/ReactHelloWorld/static/css/main.205e3f4e.css",
+    "main.css": "/ReactHelloWorld/static/css/main.bc8171f4.css",
     "main.js": "/ReactHelloWorld/static/js/main.01dfb8d9.js",
     "static/media/logo.svg": "/ReactHelloWorld/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
     "index.html": "/ReactHelloWorld/index.html",
-    "main.205e3f4e.css.map": "/ReactHelloWorld/static/css/main.205e3f4e.css.map",
+    "main.bc8171f4.css.map": "/ReactHelloWorld/static/css/main.bc8171f4.css.map",
     "main.01dfb8d9.js.map": "/ReactHelloWorld/static/js/main.01dfb8d9.js.map"
   },
   "entrypoints": [
-    "static/css/main.205e3f4e.css",
+    "static/css/main.bc8171f4.css",
     "static/js/main.01dfb8d9.js"
   ]
 }
