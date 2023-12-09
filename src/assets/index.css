@@ -100,11 +100,11 @@ form[action$="destroy"] button {
     border-width: 0;
 }
 
-#root {
-    display: flex;
-    height: 100%;
-    width: 100%;
-}
+/*#root {*/
+/*    display: flex;*/
+/*    height: 100%;*/
+/*    width: 100%;*/
+/*}*/
 
 #sidebar {
     width: 22rem;

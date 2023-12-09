@@ -118,7 +118,7 @@ const Board:React.FC = () =>{
                 <Menu theme={"dark"} items={menuItems} onSelect={(info)=>{setMenuKey(info.key)}}/>
             </Sider>
             <Drawer
-                    bodyStyle={{ backgroundColor: "#001529", padding: "0" }}
+                    styles={{body: {backgroundColor: "#001529", padding: 0}}}
                     className={"hideOnDesktop"}
                     placement={"left"}
                     closable={false}
