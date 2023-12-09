@@ -1,4 +1,5 @@
-import * as React from 'react'
+import * as React from 'react';
+import HomePage from "./dashboard/home/Home";
 import BoardsPage from "./dashboard/boards/Boards"
 import BarPage from './dashboard/bar/BarPage';
 import Page404 from "./pagenotfound/PageNotFound";
@@ -15,8 +16,7 @@ export const DashBoard=()=>{
 export const Home = () => {
     return(
         <>
-            <h1>Home Page</h1>
-            <div>Hello world!</div>
+            <HomePage/>
         </>
     )
 }
