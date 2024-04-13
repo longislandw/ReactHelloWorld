@@ -1,7 +1,7 @@
 import {NavLink, Outlet} from "react-router-dom";
 import * as React from "react";
 import {ConfigProvider, Layout, Menu} from "antd";
-import {HomeOutlined, AreaChartOutlined, BugOutlined} from "@ant-design/icons";
+import {HomeOutlined, AreaChartOutlined, BugOutlined, CrownOutlined} from "@ant-design/icons";
 import {headerStyle, footerStyle} from "../../assets/LayoutStyles";
 import boards from "./boards/Boards";
 import * as process from "process";
@@ -35,6 +35,9 @@ const DashBoard:React.FC = () =>{
             break;
         case basename+'/bar':
             currentComponet='3'
+            break;
+        case basename+'/workout_record':
+            currentComponet='4'
             break;
     }
 
@@ -72,6 +75,11 @@ const DashBoard:React.FC = () =>{
                             key: '3',
                             icon: <BugOutlined />,
                             label: <NavLink to="/bar">Bar/TestPage</NavLink>,
+                        },
+                        {
+                            key: '4',
+                            icon: <CrownOutlined />,
+                            label: <NavLink to="/workout_record">Workout Records</NavLink>,
                         },
                     ]}
                 >

@@ -3,12 +3,13 @@ import HomePage from "./dashboard/home/Home";
 import BoardsPage from "./dashboard/boards/Boards"
 import BarPage from './dashboard/bar/BarPage';
 import Page404 from "./pagenotfound/PageNotFound";
-import DashBoardpage from "./dashboard/DashBoard";
+import DashBoardPage from "./dashboard/DashBoard";
+import WorkoutRecordPage from "./dashboard/workoutRecord/WorkoutRecord";
 
 export const DashBoard=()=>{
     return(
         <>
-            <DashBoardpage/>
+            <DashBoardPage/>
         </>
     )
 }
@@ -34,6 +35,14 @@ export const Bar = () => {
     <>
         <BarPage/>
     </>
+    )
+}
+
+export const WorkoutRecord = () => {
+    return(
+        <>
+            <WorkoutRecordPage/>
+        </>
     )
 }
 
