@@ -82,7 +82,7 @@ function processDataPack(data_pack:WorkoutRecordPack, para:{start:string, end:st
     // 處理後得到
     // 1. 查詢到的新的表單資料
     // 2. 從新資料中計算得到的cost 資料
-    console.log(data_pack);
+    // console.log(data_pack);
     if (data_pack !== undefined) {
         let newData = data_pack.data.filter((item)=>{
             let result = true
@@ -154,12 +154,20 @@ const WorkoutRecord:React.FC=()=>{
 
     async function insertRec  (values: any){
         setLoading(true);
+
+        // console.log({
+        //     action: 'insert',
+        //     cost: values.cost,
+        //     points: values.points,
+        // })
+
         let url = "https://script.google.com/macros/s/AKfycbw2sQdscUlfVt7UkykCj8ptxGsRv2rR_SQtZRkeK1ZY_T_v7BUisCSbDmIccS15KFgw/exec"
         const response = await fetch(url,{
             method: 'POST',
             body: JSON.stringify({
                 action: 'insert',
                 cost: values.cost,
+                points: values.points,
             })
         }).catch((error)=>{console.log(error)});
 
@@ -168,7 +176,7 @@ const WorkoutRecord:React.FC=()=>{
             if (dataPack !== undefined) {
                 let newData = processDataPack(dataPack, searchParam)
                 if (newData){
-                    console.log(newData);
+                    // console.log(newData);
                     setWorkoutRecords(newData.data);
                     setTotalCost(newData.totalCost);
                 }
@@ -229,14 +237,15 @@ const WorkoutRecord:React.FC=()=>{
             end_time = end_time.format('YYYY-MM-DD HH:mm:ss')
         } else end_time = ''
 
-        console.log(({
-            action: 'update',
-            row_id: key,
-            date: date,
-            start_time: start_time,
-            end_time: end_time,
-            cost: row.cost,
-        }))
+        // console.log(({
+        //     action: 'update',
+        //     row_id: key,
+        //     date: date,
+        //     start_time: start_time,
+        //     end_time: end_time,
+        //     cost: row.cost,
+        //     points: row.points,
+        // }))
 
         let url = "https://script.google.com/macros/s/AKfycbw2sQdscUlfVt7UkykCj8ptxGsRv2rR_SQtZRkeK1ZY_T_v7BUisCSbDmIccS15KFgw/exec"
         const response = await fetch(url,{
@@ -544,15 +553,15 @@ const WorkoutRecord:React.FC=()=>{
     ];
 
     async function handleOK(){
-        await modifyRec(modifyFormKey, modifyForm)
         setOpenPopupForm(false)
+        await modifyRec(modifyFormKey, modifyForm)
     }
     function handleCancel(){
         setOpenPopupForm(false)
     }
 
     return(
-        <><Modal title={"ID: "+modifyFormKey} open={openPopupForm} onOk={handleOK} onCancel={handleCancel} >
+        <><Modal title={"ID: "+modifyFormKey} open={openPopupForm} onOk={handleOK} onCancel={handleCancel}>
             <Form form={modifyForm} layout={"vertical"}>
                 <Form.Item name='date' label='Date' style={{ margin: 0 }}>
                     <DatePicker allowClear={false} needConfirm={false}/>
@@ -564,10 +573,10 @@ const WorkoutRecord:React.FC=()=>{
                     <TimePicker needConfirm={false}/>
                 </Form.Item>
                 <Form.Item name='cost' label='Cost' style={{ margin: 0 }}>
-                    <InputNumber/>
+                    <InputNumber min={0}/>
                 </Form.Item>
                 <Form.Item name='points' label='Points' style={{ margin: 0 }}>
-                    <InputNumber/>
+                    <InputNumber min={0}/>
                 </Form.Item>
             </Form>
         </Modal>
@@ -606,6 +615,9 @@ const WorkoutRecord:React.FC=()=>{
                                                 }/>
                                         </Radio>
                                     </Radio.Group>
+                                </Form.Item>
+                                <Form.Item name='points' label='順於Damn樹' initialValue={null}>
+                                    <InputNumber min={0}/>
                                 </Form.Item>
                                 <Form.Item>
                                     <Button type={"primary"} icon={<PlusOutlined />} loading={loading} htmlType="submit">
