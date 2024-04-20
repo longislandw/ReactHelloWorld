@@ -15,22 +15,123 @@ import {
 import Swal from "sweetalert2";
 import {dateRangePresets, onDateRangeChange, RangePicker} from "component/ui/dataRangePicker/DateRangePicker";
 import dayjs from "dayjs";
+import isBetween from 'dayjs/plugin/isBetween'
 import {ColumnsType} from "antd/es/table/interface";
+dayjs.extend(isBetween)
 
 interface WorkoutRecordPack {
     status: number
     data: WorkoutRecordData[]
+    message: string
+    code?: number
 }
 
 interface WorkoutRecordData {
     key:    number;
-    row_id:     number;
-    date?:   string;
+    row_id: number;
+    index:  number;
+    date?:  string;
     start_time?:string;
     end_time?:  string;
-    cost:      number;
+    cost:   number;
+    points?:    number;
 }
 
+function calPointsSpent(start_time:string, end_time:string):number{
+    // 計算使用掉的點數
+    // 並非是實際點數而是根據開始與結束時間計算出來的推算點數
+    let points_spent = 0
+    let basic_fee = 1   // 基礎費用
+    let extra_fee = 0.3 // 尖峰時段的額外費用(每分鐘)
+    let date = dayjs(start_time).format('YYYY/MM/DD ')
+    let sp_start = date + '18:00:00'
+    let sp_end = date + '20:00:00'
+
+    points_spent = dayjs(end_time).diff(start_time, 'minute') * basic_fee   // 基礎費用
+
+    if (dayjs(start_time).isBetween(sp_start, sp_end, null, '[]')){
+        // |start, end|
+        if (dayjs(end_time).isBetween(sp_start, sp_end, null, '[]')){
+            points_spent += dayjs(end_time).diff(start_time, 'minute') * extra_fee
+        }
+        // |start|end
+        else {
+            points_spent += dayjs(sp_end).diff(start_time, 'minute') * extra_fee
+        }
+    } else {
+        // start|end|
+        if (dayjs(end_time).isBetween(sp_start, sp_end, null, '[]')){
+            points_spent += dayjs(end_time).diff(sp_start, 'minute') * extra_fee
+        }
+        else {
+            // start||end
+            if (dayjs(sp_start).isBetween(start_time, end_time, null, '[]')){
+                points_spent += dayjs(sp_end).diff(sp_start, 'minute') * extra_fee
+            }
+            // start,end||start, end
+            else {
+                // no extra fee
+            }
+        }
+    }
+    return Math.round(points_spent)
+}
+
+function processDataPack(data_pack:WorkoutRecordPack, para:{start:string, end:string}){
+    // 處理從後端回傳的資料
+    // 處理後得到
+    // 1. 查詢到的新的表單資料
+    // 2. 從新資料中計算得到的cost 資料
+    console.log(data_pack);
+    if (data_pack !== undefined) {
+        let newData = data_pack.data.filter((item)=>{
+            let result = true
+            if (para.start && item.date) result=result && dayjs(item.date, 'YYYY-MM-DD')>=dayjs(para.start, 'YYYY-MM-DD')
+            if (para.end && item.date) result=result && dayjs(item.date, 'YYYY-MM-DD')<=dayjs(para.end, 'YYYY-MM-DD')
+            return result
+        })
+
+        // 設定 index
+        // 更新 total_cost, total_time, points_spent
+        let sum = 0
+        let time = 0
+        let actual_points = 0
+        let cal_points = 0
+        for (let i =0;i<newData.length;i++){
+            // index
+            newData[i].index = i
+
+            // Cost
+            let cost1= isNaN(newData[i].cost)?0:Number(newData[i].cost)
+            sum += cost1
+
+            // Time, calPoints
+            if (typeof newData[i].start_time != "undefined" && typeof newData[i].end_time != "undefined") {
+                let cost2 = dayjs(newData[i].end_time).diff(dayjs(newData[i].start_time), 'minute')
+                if (cost2>0) time += cost2
+                cal_points += calPointsSpent(newData[i].start_time!, newData[i].end_time!)
+            }
+
+            // Actual Points
+            if ((i-1) >= 0 && (typeof newData[i]?.points != "undefined")&& (typeof newData[i-1]?.points != "undefined")) {
+                actual_points += newData[i-1].points! + newData[i].cost - newData[i].points!
+            }
+        }
+
+
+        return  {
+            data: newData,
+            totalCost: {
+                'cost': sum,
+                'time': time,
+                'points_actual': actual_points,
+                'points_cal': cal_points,
+            }
+        }
+    } else {
+        return null
+    }
+}
 const WorkoutRecord:React.FC=()=>{
     const [insertForm] = Form.useForm();
     const [searchForm] = Form.useForm();
@@ -40,8 +141,16 @@ const WorkoutRecord:React.FC=()=>{
     const [workoutRecords, setWorkoutRecords] = useState<WorkoutRecordData[]>([])
     const [openPopupForm, setOpenPopupForm] = useState(false);
     const [modifyFormKey, setModifyFormKey] = useState<number>(NaN);
-    const [totalCost, setTotalCost] = useState(0);
-    const [totalTime, setTotalTime] = useState(0);
+    const [totalCost, setTotalCost] = useState({
+        'cost':0,
+        'time':0,
+        'points_actual':0,
+        'points_cal':0,
+    });
+    const [searchParam, setSearchParam] = useState({
+        start:dayjs().add(-1, 'month').format('YYYY-MM-DD'),
+        end:dayjs().format('YYYY-MM-DD'),
+    })
 
     async function insertRec  (values: any){
         setLoading(true);
@@ -55,7 +164,16 @@ const WorkoutRecord:React.FC=()=>{
         }).catch((error)=>{console.log(error)});
 
         if (response){
-            let {message} = await response.json();
+            let dataPack = await response.json();
+            if (dataPack !== undefined) {
+                let newData = processDataPack(dataPack, searchParam)
+                if (newData){
+                    console.log(newData);
+                    setWorkoutRecords(newData.data);
+                    setTotalCost(newData.totalCost);
+                }
+            }
+            let message = dataPack.message
             console.log(response.status)
             console.log(message)
             if (response.status===200){
@@ -67,7 +185,6 @@ const WorkoutRecord:React.FC=()=>{
                     showConfirmButton: true,
                     timer: 1000
                 })
-                // setIsRefresh(true)
 
             }else {
                 console.log(response.status)
@@ -78,6 +195,7 @@ const WorkoutRecord:React.FC=()=>{
                     footer: '請洽詢網站管理者尋求協助'
                 })
             }
+            setLoading(false);
 
         }else{
             console.log("Data Modify Failed")
@@ -86,10 +204,8 @@ const WorkoutRecord:React.FC=()=>{
                 title: '連線失敗...',
                 text: '請檢查網路狀況',
             })
+            setLoading(false);
         }
-
-        // 更新資料
-        await getRec(searchForm.getFieldsValue(true))
     }
 
     async function modifyRec (key: number, form:FormInstance){
@@ -132,11 +248,21 @@ const WorkoutRecord:React.FC=()=>{
                 start_time: start_time,
                 end_time: end_time,
                 cost: row.cost,
+                points: row.points,
             })
         }).catch((error)=>{console.log(error)});
 
         if (response){
-            let {message} = await response.json();
+            let dataPack = await response.json();
+            if (dataPack !== undefined) {
+                let newData = processDataPack(dataPack, searchParam)
+                if (newData){
+                    console.log(newData);
+                    setWorkoutRecords(newData.data);
+                    setTotalCost(newData.totalCost);
+                }
+            }
+            let message = dataPack.message
             console.log(response.status)
             console.log(message)
             if (response.status===200){
@@ -157,6 +283,7 @@ const WorkoutRecord:React.FC=()=>{
                     footer: '請洽詢網站管理者尋求協助'
                 })
             }
+            setLoading(false);
 
         }else{
             console.log("Data Modify Failed")
@@ -165,10 +292,8 @@ const WorkoutRecord:React.FC=()=>{
                 title: '連線失敗...',
                 text: '請檢查網路狀況',
             })
+            setLoading(false);
         }
-
-        // 更新資料
-        await getRec(searchForm.getFieldsValue(true))
     }
 
     async function deleteRec (row_ID:number){
@@ -185,7 +310,16 @@ const WorkoutRecord:React.FC=()=>{
         }).catch((error)=>{console.log(error)});
 
         if (response){
-            let {message} = await response.json();
+            let dataPack = await response.json();
+            if (dataPack !== undefined) {
+                let newData = processDataPack(dataPack, searchParam)
+                if (newData){
+                    console.log(newData);
+                    setWorkoutRecords(newData.data);
+                    setTotalCost(newData.totalCost);
+                }
+            }
+            let message = dataPack.message
             console.log(response.status)
             console.log(message)
             if (response.status===200){
@@ -206,7 +340,7 @@ const WorkoutRecord:React.FC=()=>{
                     footer: '請洽詢網站管理者尋求協助'
                 })
             }
-
+            setLoading(false);
         }else{
             console.log("Data Modify Failed")
             Swal.fire({
@@ -214,9 +348,8 @@ const WorkoutRecord:React.FC=()=>{
                 title: '連線失敗...',
                 text: '請檢查網路狀況',
             })
+            setLoading(false);
         }
-        // 更新資料
-        await getRec(searchForm.getFieldsValue(true))
     }
 
     async function getRec (values: any){
@@ -233,6 +366,10 @@ const WorkoutRecord:React.FC=()=>{
                 end = values['dateRange'][1].format('YYYY-MM-DD')
             }
         }
+        setSearchParam({
+            start: start,
+            end: end,
+        })
 
         // 抓取資料
         let url = `https://script.google.com/macros/s/AKfycbw2sQdscUlfVt7UkykCj8ptxGsRv2rR_SQtZRkeK1ZY_T_v7BUisCSbDmIccS15KFgw/exec?dRange=${[start, end]}`
@@ -243,31 +380,12 @@ const WorkoutRecord:React.FC=()=>{
                 (dataPack: WorkoutRecordPack) => {
                     console.log(dataPack);
                     if (dataPack !== undefined) {
-                        let newData = dataPack.data.filter((item)=>{
-                            let result = true
-                            if (start && item.date) result=result&& dayjs(item.date, 'YYYY-MM-DD')>=dayjs(start, 'YYYY-MM-DD')
-                            if (end && item.date) result=result&& dayjs(item.date, 'YYYY-MM-DD')<=dayjs(end, 'YYYY-MM-DD')
-                            return result
-                        })
-                        setWorkoutRecords(newData);
-                        console.log(newData);
-
-                        // 更新total cost, total time
-                        let sum = 0
-                        let time = 0
-                        for (let i =0;i<newData.length;i++){
-                            // Cost
-                            let cost1= isNaN(newData[i].cost)?0:Number(newData[i].cost)
-                            sum += cost1
-
-                            // Time
-                            if (newData[i].start_time && newData[i].end_time) {
-                                let cost2 = dayjs(newData[i].end_time).diff(dayjs(newData[i].start_time), 'minute')
-                                if (cost2>0) time += cost2
-                            }
+                        let newData = processDataPack(dataPack, {start:start, end:end})
+                        if (newData){
+                            console.log(newData);
+                            setWorkoutRecords(newData.data);
+                            setTotalCost(newData.totalCost);
                         }
-                        setTotalCost(sum)
-                        setTotalTime(time)
                     }
                 })
             .then(
@@ -351,6 +469,64 @@ const WorkoutRecord:React.FC=()=>{
             align: "center",
         },
         {
+            title: '目前點數',
+            dataIndex: 'points',
+            key: 'points',
+            width:'100px',
+            align: "center",
+        },
+        {
+            title: '時間',
+            dataIndex: 'end_time',
+            key: 'end_time',
+            width:'70px',
+            align: "center",
+            render: (value, record, index) => {
+                let time_spent = 0
+                if (value){
+                    time_spent = dayjs(value).diff(dayjs(record.start_time), 'minute')
+                }
+                return time_spent
+            },
+        },
+        {
+            title: '本次使用',
+            dataIndex: 'points',
+            key: 'points',
+            width:'70px',
+            align: "center",
+            render: (value, record, index) =>{
+                let points_spent = NaN
+                let idx = record.index
+                // 若有紀錄本次點數, 上次的點數有資料且不為零
+                if (value && (idx-1) >= 0 && workoutRecords[idx-1].points){
+                    let prv_point = workoutRecords[idx-1].points
+                    if (prv_point){
+                        // 使用點數為上次剩餘點數加上本次儲值, 扣除當前剩餘點數
+                        points_spent = prv_point + record.cost - value
+                    }
+                }
+                // else if (typeof record.start_time!= "undefined" && typeof record.end_time!= "undefined") {
+                //     points_spent = calPointsSpent(record.start_time, record.end_time)
+                // }
+                return points_spent
+            },
+        },
+        {
+            title: '本次使用(估計)',
+            dataIndex: 'points',
+            key: 'points',
+            width:'100px',
+            align: "center",
+            render: (value, record, index) =>{
+                let points_spent = 0
+                if (record.start_time && record.end_time) {
+                    points_spent = calPointsSpent(record.start_time, record.end_time)
+                }
+                return points_spent
+            },
+        },
+        {
             title: 'Delete',
             dataIndex: 'operation',
             width: '90px',
@@ -367,8 +543,8 @@ const WorkoutRecord:React.FC=()=>{
         },
     ];
 
-    function handleOK(){
-        modifyRec(modifyFormKey, modifyForm)
+    async function handleOK(){
+        await modifyRec(modifyFormKey, modifyForm)
         setOpenPopupForm(false)
     }
     function handleCancel(){
@@ -388,6 +564,9 @@ const WorkoutRecord:React.FC=()=>{
                     <TimePicker needConfirm={false}/>
                 </Form.Item>
                 <Form.Item name='cost' label='Cost' style={{ margin: 0 }}>
+                    <InputNumber/>
+                </Form.Item>
+                <Form.Item name='points' label='Points' style={{ margin: 0 }}>
                     <InputNumber/>
                 </Form.Item>
             </Form>
@@ -437,7 +616,10 @@ const WorkoutRecord:React.FC=()=>{
                             </Form>
 
                             <Form size={"small"} onFinish={getRec} form={searchForm} layout={"inline"} >
-                                <Form.Item name="dateRange" label={<p style={{textAlign:"left", fontSize:14}}>茶型入奇區詹</p>} initialValue={[dayjs().add(-30, 'd'), dayjs()]}>
+                                <Form.Item
+                                    name="dateRange"
+                                    label={<p style={{textAlign:"left", fontSize:14}}>茶型入奇區詹</p>}
+                                    initialValue={[dayjs().add(-1, 'month'), dayjs()]}>
                                     <RangePicker allowEmpty={[true,true]} presets={dateRangePresets} onChange={onDateRangeChange} />
                                 </Form.Item>
                                 <Form.Item>
@@ -448,14 +630,21 @@ const WorkoutRecord:React.FC=()=>{
                             </Form>
                         </Space>
 
-                        <Statistic loading={loading} title={"總計花費"} value={totalCost}></Statistic>
-                        <Statistic loading={loading} title={"總計時間(分鐘)"} value={totalTime}></Statistic>
+                        <Statistic loading={loading} title={"總計花費"} value={totalCost.cost}></Statistic>
+                        <Statistic loading={loading} title={"總計時間(分鐘)"} value={totalCost.time}></Statistic>
+                        <Statistic loading={loading} title={"總計點數(實際)"} value={totalCost.points_actual}></Statistic>
+                        <Statistic loading={loading} title={"總計點數(估算)"} value={totalCost.points_cal}></Statistic>
                     </Space>
 
                     <Table
+                        // style={{maxWidth:1280}}
+                        // tableLayout={"auto"}
+                        // size={"middle"}
+                        bordered={true}
                         dataSource={workoutRecords}
                         columns={columns}
                         loading={loading}
+                        pagination={{defaultPageSize: 20}}
                     />
                 </Space>
 
