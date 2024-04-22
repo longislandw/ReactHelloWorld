@@ -93,7 +93,7 @@ function processDataPack(data_pack:WorkoutRecordPack, para:{start:string, end:st
 
         // 設定 index
         // 更新 total_cost, total_time, points_spent
-        let sum = 0
+        let total_money = 0
         let time = 0
         let actual_points = 0
         let cal_points = 0
@@ -103,7 +103,7 @@ function processDataPack(data_pack:WorkoutRecordPack, para:{start:string, end:st
 
             // Cost
             let cost1= isNaN(newData[i].cost)?0:Number(newData[i].cost)
-            sum += cost1
+            total_money += cost1
 
             // Time, calPoints
             if (typeof newData[i].start_time != "undefined" && typeof newData[i].end_time != "undefined") {
@@ -122,7 +122,7 @@ function processDataPack(data_pack:WorkoutRecordPack, para:{start:string, end:st
         return  {
             data: newData,
             totalCost: {
-                'cost': sum,
+                'cost': total_money,
                 'time': time,
                 'points_actual': actual_points,
                 'points_cal': cal_points,
@@ -431,6 +431,14 @@ const WorkoutRecord:React.FC=()=>{
             })
         },
         {
+            title: 'Index',
+            dataIndex: 'index',
+            key: 'index',
+            width:'60px',
+            align: "center",
+            render:((value)=>value+1)
+        },
+        {
             title: 'Date',
             dataIndex: 'date',
             key: 'date',
@@ -438,7 +446,7 @@ const WorkoutRecord:React.FC=()=>{
             align: "center",
             render: ((value: any)=>{
                 if (dayjs(value).isValid()){
-                    value = dayjs(value).format('YYYY-MM-DD')
+                    value = dayjs(value).format('MM-DD')
                 }
                 return value
             })
@@ -471,6 +479,20 @@ const WorkoutRecord:React.FC=()=>{
             })
         },
         {
+            title: '時間',
+            dataIndex: 'end_time',
+            key: 'end_time',
+            width:'70px',
+            align: "center",
+            render: (value, record) => {
+                let time_spent = 0
+                if (value){
+                    time_spent = dayjs(value).diff(dayjs(record.start_time), 'minute')
+                }
+                return time_spent
+            },
+        },
+        {
             title: 'Cost',
             dataIndex: 'cost',
             key: 'cost',
@@ -483,20 +505,6 @@ const WorkoutRecord:React.FC=()=>{
             key: 'points',
             width:'100px',
             align: "center",
-        },
-        {
-            title: '時間',
-            dataIndex: 'end_time',
-            key: 'end_time',
-            width:'70px',
-            align: "center",
-            render: (value, record, index) => {
-                let time_spent = 0
-                if (value){
-                    time_spent = dayjs(value).diff(dayjs(record.start_time), 'minute')
-                }
-                return time_spent
-            },
         },
         {
             title: '本次使用',
