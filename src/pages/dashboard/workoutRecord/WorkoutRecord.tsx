@@ -436,7 +436,9 @@ const WorkoutRecord:React.FC=()=>{
             key: 'index',
             width:'60px',
             align: "center",
-            render:((value)=>value+1)
+            render:((value)=>value+1),
+            sortDirections:["ascend", "descend", "ascend"],
+            sorter: (a, b)=>a.index-b.index,
         },
         {
             title: 'Date',
@@ -449,7 +451,9 @@ const WorkoutRecord:React.FC=()=>{
                     value = dayjs(value).format('MM-DD')
                 }
                 return value
-            })
+            }),
+            sortDirections:["ascend", "descend", "ascend"],
+            sorter: (a, b)=>dayjs(a.date).diff(b.date, 'day'),
             // sorter:true
         },
         {
@@ -657,6 +661,7 @@ const WorkoutRecord:React.FC=()=>{
                     </Space>
 
                     <Table
+                        scroll={{ y: 600 }}
                         // style={{maxWidth:1280}}
                         // tableLayout={"auto"}
                         // size={"middle"}
