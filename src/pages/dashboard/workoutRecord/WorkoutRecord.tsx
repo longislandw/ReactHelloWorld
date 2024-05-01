@@ -17,6 +17,7 @@ import {dateRangePresets, onDateRangeChange, RangePicker} from "component/ui/dat
 import dayjs from "dayjs";
 import isBetween from 'dayjs/plugin/isBetween'
 import {ColumnsType} from "antd/es/table/interface";
+import {roundTo} from "utils/mathUtils";
 dayjs.extend(isBetween)
 
 interface WorkoutRecordPack {
@@ -74,6 +75,8 @@ function calPointsSpent(start_time:string, end_time:string):number{
             }
         }
     }
+    if (isNaN(points_spent)) points_spent=0
+
     return Math.round(points_spent)
 }
 
@@ -117,6 +120,7 @@ function processDataPack(data_pack:WorkoutRecordPack, para:{start:string, end:st
                 actual_points += newData[i-1].points! + newData[i].cost - newData[i].points!
             }
         }
+        actual_points = roundTo(actual_points, 1)
 
 
         return  {
@@ -431,17 +435,18 @@ const WorkoutRecord:React.FC=()=>{
             })
         },
         {
-            title: 'Index',
+            title: '筆數',
             dataIndex: 'index',
             key: 'index',
             width:'60px',
             align: "center",
             render:((value)=>value+1),
+            defaultSortOrder: "descend",
             sortDirections:["ascend", "descend", "ascend"],
             sorter: (a, b)=>a.index-b.index,
         },
         {
-            title: 'Date',
+            title: '日期',
             dataIndex: 'date',
             key: 'date',
             width:'120px',
@@ -457,7 +462,7 @@ const WorkoutRecord:React.FC=()=>{
             // sorter:true
         },
         {
-            title: 'Start Time',
+            title: '開始',
             dataIndex: 'start_time',
             key: 'start_time',
             width:'120px',
@@ -470,7 +475,7 @@ const WorkoutRecord:React.FC=()=>{
             })
         },
         {
-            title: 'EndTime',
+            title: '結束',
             dataIndex: 'end_time',
             key: 'end_time',
             width:'120px',
@@ -497,7 +502,7 @@ const WorkoutRecord:React.FC=()=>{
             },
         },
         {
-            title: 'Cost',
+            title: '費用',
             dataIndex: 'cost',
             key: 'cost',
             width:'70px',
@@ -530,6 +535,7 @@ const WorkoutRecord:React.FC=()=>{
                 // else if (typeof record.start_time!= "undefined" && typeof record.end_time!= "undefined") {
                 //     points_spent = calPointsSpent(record.start_time, record.end_time)
                 // }
+                points_spent = roundTo(points_spent, 1)
                 return points_spent
             },
         },
@@ -573,27 +579,26 @@ const WorkoutRecord:React.FC=()=>{
     }
 
     return(
-        <><Modal title={"ID: "+modifyFormKey} open={openPopupForm} onOk={handleOK} onCancel={handleCancel}>
-            <Form form={modifyForm} layout={"vertical"}>
-                <Form.Item name='date' label='Date' style={{ margin: 0 }}>
-                    <DatePicker allowClear={false} needConfirm={false}/>
-                </Form.Item>
-                <Form.Item name='start_time' label='Start Time' style={{ margin: 0 }}>
-                    <TimePicker allowClear={false} needConfirm={false}/>
-                </Form.Item>
-                <Form.Item name='end_time' label='End Time' style={{ margin: 0 }}>
-                    <TimePicker needConfirm={false}/>
-                </Form.Item>
-                <Form.Item name='cost' label='Cost' style={{ margin: 0 }}>
-                    <InputNumber min={0}/>
-                </Form.Item>
-                <Form.Item name='points' label='Points' style={{ margin: 0 }}>
-                    <InputNumber min={0}/>
-                </Form.Item>
-            </Form>
-        </Modal>
-            {/*<div className={"bg-gray-50 py-5 lg:py-16"}>*/}
-                {/*<div className={"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between"}>*/}
+        <>
+            <Modal title={"ID: "+modifyFormKey} open={openPopupForm} onOk={handleOK} onCancel={handleCancel}>
+                <Form form={modifyForm} layout={"vertical"}>
+                    <Form.Item name='date' label='Date' style={{ margin: 0 }}>
+                        <DatePicker allowClear={false} needConfirm={false}/>
+                    </Form.Item>
+                    <Form.Item name='start_time' label='Start Time' style={{ margin: 0 }}>
+                        <TimePicker allowClear={false} needConfirm={false}/>
+                    </Form.Item>
+                    <Form.Item name='end_time' label='End Time' style={{ margin: 0 }}>
+                        <TimePicker needConfirm={false}/>
+                    </Form.Item>
+                    <Form.Item name='cost' label='Cost' style={{ margin: 0 }}>
+                        <InputNumber min={0}/>
+                    </Form.Item>
+                    <Form.Item name='points' label='Points' style={{ margin: 0 }}>
+                        <InputNumber min={0}/>
+                    </Form.Item>
+                </Form>
+            </Modal>
             <div
                 style={{
                     margin: '5px 10px',
@@ -604,74 +609,70 @@ const WorkoutRecord:React.FC=()=>{
                     overflow: "auto",
                 }}
             >
-                <Space direction={"vertical"} align={"center"} size={"small"}>
-                    <Space direction={"horizontal"} align={"center"} size={"middle"}>
-                        <Space direction={"vertical"} >
-                            <Form size={"small"} onFinish={insertRec} form={insertForm} >
-                                <Form.Item name="cost" label="花喙" initialValue={0}>
-
-                                    <Radio.Group >
-                                        <Radio value={0}>0</Radio>
-                                        <Radio value={100}>100</Radio>
-                                        <Radio value={200}>200</Radio>
-                                        <Radio value={cost}>
-                                            <InputNumber
-                                                min={1}
-                                                value={cost}
-                                                changeOnWheel={true}
-                                                controls={false}
-                                                onChange={(v)=> {
-                                                    if (v === null) v = 0
-                                                    setCost(v)
-                                                }
-                                                }/>
-                                        </Radio>
-                                    </Radio.Group>
-                                </Form.Item>
-                                <Form.Item name='points' label='順於Damn樹' initialValue={null}>
-                                    <InputNumber min={0}/>
-                                </Form.Item>
-                                <Form.Item>
-                                    <Button type={"primary"} icon={<PlusOutlined />} loading={loading} htmlType="submit">
-                                        開鼠計入
-                                    </Button>
-                                </Form.Item>
-
-                            </Form>
-
-                            <Form size={"small"} onFinish={getRec} form={searchForm} layout={"inline"} >
-                                <Form.Item
-                                    name="dateRange"
-                                    label={<p style={{textAlign:"left", fontSize:14}}>茶型入奇區詹</p>}
-                                    initialValue={[dayjs().add(-1, 'month'), dayjs()]}>
-                                    <RangePicker allowEmpty={[true,true]} presets={dateRangePresets} onChange={onDateRangeChange} />
-                                </Form.Item>
-                                <Form.Item>
-                                    <Button type={"primary"} icon={<SearchOutlined />} loading={loading} htmlType="submit">
-                                        茶型
-                                    </Button>
-                                </Form.Item>
-                            </Form>
-                        </Space>
-
-                        <Statistic loading={loading} title={"總計花費"} value={totalCost.cost}></Statistic>
-                        <Statistic loading={loading} title={"總計時間(分鐘)"} value={totalCost.time}></Statistic>
-                        <Statistic loading={loading} title={"總計點數(實際)"} value={totalCost.points_actual}></Statistic>
-                        <Statistic loading={loading} title={"總計點數(估算)"} value={totalCost.points_cal}></Statistic>
-                    </Space>
-
-                    <Table
-                        scroll={{ y: 600 }}
-                        // style={{maxWidth:1280}}
-                        // tableLayout={"auto"}
-                        // size={"middle"}
-                        bordered={true}
-                        dataSource={workoutRecords}
-                        columns={columns}
-                        loading={loading}
-                        pagination={{defaultPageSize: 20}}
-                    />
+                <Space direction={"horizontal"} align={"center"} size={"middle"}>
+                    <Statistic loading={loading} title={"總計花費"} value={totalCost.cost}></Statistic>
+                    <Statistic loading={loading} title={"總計時間(分鐘)"} value={totalCost.time}></Statistic>
+                    <Statistic loading={loading} title={"總計點數(實際)"} value={totalCost.points_actual}></Statistic>
+                    <Statistic loading={loading} title={"總計點數(估算)"} value={totalCost.points_cal}></Statistic>
                 </Space>
+
+                <Form size={"small"} onFinish={insertRec} form={insertForm} >
+                    <Form.Item name="cost" label="花喙" initialValue={0}>
+
+                        <Radio.Group >
+                            <Radio value={0}>0</Radio>
+                            <Radio value={100}>100</Radio>
+                            <Radio value={200}>200</Radio>
+                            <Radio value={cost}>
+                                <InputNumber
+                                    min={1}
+                                    value={cost}
+                                    changeOnWheel={true}
+                                    controls={false}
+                                    onChange={(v)=> {
+                                        if (v === null) v = 0
+                                        setCost(v)
+                                    }
+                                    }/>
+                            </Radio>
+                        </Radio.Group>
+                    </Form.Item>
+                    <Form.Item name='points' label='順於Damn樹' initialValue={null}>
+                        <InputNumber min={0}/>
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type={"primary"} icon={<PlusOutlined />} loading={loading} htmlType="submit">
+                            開鼠計入
+                        </Button>
+                    </Form.Item>
+
+                </Form>
+
+                <Form size={"small"} onFinish={getRec} form={searchForm} layout={"inline"} >
+                    <Form.Item
+                        name="dateRange"
+                        label={<p style={{textAlign:"left", fontSize:14}}>茶型入奇區詹</p>}
+                        initialValue={[dayjs().add(-1, 'month'), dayjs()]}>
+                        <RangePicker allowEmpty={[true,true]} presets={dateRangePresets} onChange={onDateRangeChange} />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type={"primary"} icon={<SearchOutlined />} loading={loading} htmlType="submit">
+                            茶型
+                        </Button>
+                    </Form.Item>
+                </Form>
+
+                <Table
+                    scroll={{ x: 1200, y: 300 }}
+                    // style={{maxWidth:1280}}
+                    // tableLayout={"fixed"}
+                    // size={"middle"}
+                    // bordered={true}
+                    dataSource={workoutRecords}
+                    columns={columns}
+                    loading={loading}
+                    pagination={{defaultPageSize: 30}}
+                />
 
             </div>
 
