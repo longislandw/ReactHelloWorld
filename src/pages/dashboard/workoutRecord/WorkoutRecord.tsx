@@ -10,7 +10,7 @@ import {
     Space,
     Table,
     Typography,
-    TimePicker, Popconfirm, Statistic, FormInstance,
+    TimePicker, Popconfirm, Statistic, FormInstance, ConfigProvider,
 } from "antd";
 import Swal from "sweetalert2";
 import {dateRangePresets, onDateRangeChange, RangePicker} from "component/ui/dataRangePicker/DateRangePicker";
@@ -41,7 +41,7 @@ interface WorkoutRecordData {
 function calPointsSpent(start_time:string, end_time:string):number{
     // 計算使用掉的點數
     // 並非是實際點數而是根據開始與結束時間計算出來的推算點數
-    let points_spent = 0
+    let points_spent: number
     let basic_fee = 1   // 基礎費用
     let extra_fee = 0.3 // 尖峰時段的額外費用(每分鐘)
     let date = dayjs(start_time).format('YYYY/MM/DD ')
@@ -412,7 +412,7 @@ const WorkoutRecord:React.FC=()=>{
                         icon: 'error',
                         title: reason.title,
                         text: reason.text,
-                    }).then(r =>{setLoading(false)} )
+                    }).then(() =>{setLoading(false)} )
                 })
         ;
         // setLoading(false);
@@ -521,7 +521,7 @@ const WorkoutRecord:React.FC=()=>{
             key: 'points',
             width:'70px',
             align: "center",
-            render: (value, record, index) =>{
+            render: (value, record) =>{
                 let points_spent = NaN
                 let idx = record.index
                 // 若有紀錄本次點數, 上次的點數有資料且不為零
@@ -545,7 +545,7 @@ const WorkoutRecord:React.FC=()=>{
             key: 'points',
             width:'100px',
             align: "center",
-            render: (value, record, index) =>{
+            render: (value, record) =>{
                 let points_spent = 0
                 if (record.start_time && record.end_time) {
                     points_spent = calPointsSpent(record.start_time, record.end_time)
@@ -603,6 +603,7 @@ const WorkoutRecord:React.FC=()=>{
                 style={{
                     margin: '5px 10px',
                     background: '#ffffff',
+                    // backgroundImage: `url('https://en.pimg.jp/046/971/379/1/46971379.jpg')`,
                     minHeight: 280,
                     padding: 24,
                     borderRadius: 10,
@@ -662,6 +663,17 @@ const WorkoutRecord:React.FC=()=>{
                     </Form.Item>
                 </Form>
 
+                <ConfigProvider
+                    theme={{
+                        components:{
+                            Table: {
+                                headerBg:'#9bd4e8',
+                                headerSortActiveBg: '#5ab5d5',
+                                borderRadius: 1000,
+                                cellPaddingInline: 0,
+                            }},
+                    }}
+                >
                 <Table
                     scroll={{ x: 1200, y: 300 }}
                     // style={{maxWidth:1280}}
@@ -673,6 +685,7 @@ const WorkoutRecord:React.FC=()=>{
                     loading={loading}
                     pagination={{defaultPageSize: 30}}
                 />
+                </ConfigProvider>
 
             </div>
 
